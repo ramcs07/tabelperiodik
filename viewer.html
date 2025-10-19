@@ -15,13 +15,13 @@
     </style>
   </head>
   <body>
-    <!-- Three.js & Addons dari CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.149.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- Gunakan type="module" agar bisa import ES modules -->
+    <script type="module">
+      import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
+      import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
 
-    <script>
-      // Buat scene, kamera, renderer
+      // Scene, camera, renderer
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
         75,
@@ -32,9 +32,10 @@
 
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputEncoding = THREE.sRGBEncoding;
       document.body.appendChild(renderer.domElement);
 
-      // Tambahkan pencahayaan
+      // Lights
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
@@ -43,36 +44,49 @@
       dirLight.position.set(3, 10, 10);
       scene.add(dirLight);
 
-      // Tambahkan kontrol kamera
-      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+      scene.add(ambientLight);
+
+      // Controls
+      const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
 
-      // Muat model GLB
-      const loader = new THREE.GLTFLoader();
+      // Load model
+      const loader = new GLTFLoader();
       loader.load(
         "https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb",
-        function (gltf) {
+        (gltf) => {
           scene.add(gltf.scene);
-          camera.position.set(2, 2, 3);
+
+          // Hitung ukuran model agar kamera otomatis menyesuaikan
+          const box = new THREE.Box3().setFromObject(gltf.scene);
+          const size = box.getSize(new THREE.Vector3()).length();
+          const center = box.getCenter(new THREE.Vector3());
+
+          camera.position.copy(center);
+          camera.position.x += size / 2;
+          camera.position.y += size / 4;
+          camera.position.z += size / 2;
+          camera.lookAt(center);
 
           animate();
         },
         undefined,
-        function (error) {
+        (error) => {
           console.error("Gagal memuat model:", error);
         }
       );
 
-      // Fungsi animasi
+      // Animate
       function animate() {
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
       }
 
-      // Responsif saat ukuran jendela berubah
-      window.addEventListener("resize", function () {
+      // Responsif
+      window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
