@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+    <script type="module">
+      import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/loaders/GLTFLoader.js";
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.150.0/examples/jsm/controls/OrbitControls.js";
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      // Tambahkan cahaya agar model terlihat lebih jelas
+      const light = new THREE.HemisphereLight(0xffffff, 0x444444);
+      light.position.set(0, 20, 0);
+      scene.add(light);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(5, 10, 7.5);
+      scene.add(dirLight);
+
+      // Load model 3D (GLB)
+      const loader = new GLTFLoader();
+loader.load(
+  'https://drive.google.com/uc?export=download&id=1EY0PwXmDyDFjJh3XQX_evjdneQ1wXXll',
+  function (gltf) {
+    scene.add(gltf.scene);
+    camera.position.z = 3;
+    animate();
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  }
+);
+
+
+      // Tambahkan kontrol rotasi dan zoom
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 1.5;
+
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    </script>
+  </head>
+  <body style="margin:0; overflow:hidden; background:#000;"></body>
+</html>
