@@ -12,19 +12,30 @@
       canvas {
         display: block;
       }
+      #loading {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-family: sans-serif;
+        font-size: 18px;
+      }
     </style>
   </head>
   <body>
-    <!-- Gunakan module version -->
+    <div id="loading">Loading 3D Model...</div>
+
+    <!-- Versi module (tidak pakai script lama) -->
     <script type="module">
       import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
       import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
       import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-      // Setup scene
+      // === Setup dasar ===
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
-        75,
+        60,
         window.innerWidth / window.innerHeight,
         0.1,
         1000
@@ -34,7 +45,7 @@
       renderer.outputEncoding = THREE.sRGBEncoding;
       document.body.appendChild(renderer.domElement);
 
-      // Lighting
+      // === Cahaya ===
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
@@ -43,22 +54,26 @@
       dirLight.position.set(3, 10, 10);
       scene.add(dirLight);
 
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
-      scene.add(ambientLight);
+      const ambient = new THREE.AmbientLight(0xffffff, 0.3);
+      scene.add(ambient);
 
-      // Controls
+      // === Kontrol kamera ===
       const controls = new OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.05;
 
-      // Load model
+      // === Loader model ===
       const loader = new GLTFLoader();
+      const loadingText = document.getElementById("loading");
+
       loader.load(
-        ""https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb"
-", // kalau model.glb ada di repo yang sama
+        // gunakan URL GitHack agar bisa diakses online
+        "https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb",
         (gltf) => {
+          loadingText.remove();
           scene.add(gltf.scene);
 
+          // auto-fit kamera ke model
           const box = new THREE.Box3().setFromObject(gltf.scene);
           const size = box.getSize(new THREE.Vector3()).length();
           const center = box.getCenter(new THREE.Vector3());
@@ -71,18 +86,26 @@
 
           animate();
         },
-        undefined,
+        (xhr) => {
+          loadingText.innerText = `Loading model... ${(
+            (xhr.loaded / xhr.total) *
+            100
+          ).toFixed(0)}%`;
+        },
         (error) => {
-          console.error("Gagal memuat model:", error);
+          loadingText.innerText = "❌ Gagal memuat model.";
+          console.error("Error loading model:", error);
         }
       );
 
+      // === Animasi ===
       function animate() {
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
       }
 
+      // === Responsif ===
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
