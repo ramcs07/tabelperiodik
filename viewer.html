@@ -15,13 +15,13 @@
     </style>
   </head>
   <body>
-    <!-- Gunakan type="module" agar bisa import ES modules -->
+    <!-- Gunakan module version -->
     <script type="module">
       import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
       import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
+      import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js";
 
-      // Scene, camera, renderer
+      // Setup scene
       const scene = new THREE.Scene();
       const camera = new THREE.PerspectiveCamera(
         75,
@@ -29,13 +29,12 @@
         0.1,
         1000
       );
-
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.outputEncoding = THREE.sRGBEncoding;
       document.body.appendChild(renderer.domElement);
 
-      // Lights
+      // Lighting
       const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
@@ -55,11 +54,11 @@
       // Load model
       const loader = new GLTFLoader();
       loader.load(
-        "https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb",
+        ""https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb"
+", // kalau model.glb ada di repo yang sama
         (gltf) => {
           scene.add(gltf.scene);
 
-          // Hitung ukuran model agar kamera otomatis menyesuaikan
           const box = new THREE.Box3().setFromObject(gltf.scene);
           const size = box.getSize(new THREE.Vector3()).length();
           const center = box.getCenter(new THREE.Vector3());
@@ -78,14 +77,12 @@
         }
       );
 
-      // Animate
       function animate() {
         requestAnimationFrame(animate);
         controls.update();
         renderer.render(scene, camera);
       }
 
-      // Responsif
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
