@@ -45,16 +45,13 @@
       document.body.appendChild(renderer.domElement);
 
       // === Cahaya ===
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.5);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
       hemiLight.position.set(0, 20, 0);
       scene.add(hemiLight);
 
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-      dirLight.position.set(3, 10, 10);
+      dirLight.position.set(10, 10, 10);
       scene.add(dirLight);
-
-      const ambient = new THREE.AmbientLight(0xffffff, 0.3);
-      scene.add(ambient);
 
       // === Kontrol kamera ===
       const controls = new OrbitControls(camera, renderer.domElement);
@@ -71,16 +68,18 @@
           loadingText.remove();
           scene.add(gltf.scene);
 
-          // auto-fit kamera ke model
+          // Ambil bounding box untuk auto-fit kamera
           const box = new THREE.Box3().setFromObject(gltf.scene);
-          const size = box.getSize(new THREE.Vector3()).length();
+          const size = box.getSize(new THREE.Vector3());
           const center = box.getCenter(new THREE.Vector3());
 
-          camera.position.copy(center);
-          camera.position.x += size / 2;
-          camera.position.y += size / 4;
-          camera.position.z += size / 2;
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = camera.fov * (Math.PI / 180);
+          let cameraZ = Math.abs(maxDim / Math.sin(fov / 2));
+
+          camera.position.set(center.x + cameraZ / 3, center.y + cameraZ / 3, center.z + cameraZ);
           camera.lookAt(center);
+          controls.target.copy(center);
 
           animate();
         },
