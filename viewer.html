@@ -68,10 +68,16 @@
 
       loader.load(
         // gunakan URL GitHack agar bisa diakses online
-        "https://rawcdn.githack.com/ramcs07/tabelperiodik/refs/heads/main/model.glb",
-        (gltf) => {
-          loadingText.remove();
-          scene.add(gltf.scene);
+loader.load(
+  "./model.glb",
+  (gltf) => {
+    loadingText.remove();
+    scene.add(gltf.scene);
+    ...
+  },
+  ...
+);
+
 
           // auto-fit kamera ke model
           const box = new THREE.Box3().setFromObject(gltf.scene);
