@@ -26,7 +26,6 @@
   <body>
     <div id="loading">Loading 3D Model...</div>
 
-    <!-- Versi module (tidak pakai script lama) -->
     <script type="module">
       import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
       import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js";
@@ -67,17 +66,10 @@
       const loadingText = document.getElementById("loading");
 
       loader.load(
-        // gunakan URL GitHack agar bisa diakses online
-loader.load(
-  "./model.glb",
-  (gltf) => {
-    loadingText.remove();
-    scene.add(gltf.scene);
-    ...
-  },
-  ...
-);
-
+        "./model.glb", // pastikan model.glb ada di folder yang sama dengan viewer.html
+        (gltf) => {
+          loadingText.remove();
+          scene.add(gltf.scene);
 
           // auto-fit kamera ke model
           const box = new THREE.Box3().setFromObject(gltf.scene);
@@ -93,10 +85,14 @@ loader.load(
           animate();
         },
         (xhr) => {
-          loadingText.innerText = `Loading model... ${(
-            (xhr.loaded / xhr.total) *
-            100
-          ).toFixed(0)}%`;
+          if (xhr.total) {
+            loadingText.innerText = `Loading model... ${(
+              (xhr.loaded / xhr.total) *
+              100
+            ).toFixed(0)}%`;
+          } else {
+            loadingText.innerText = "Loading model...";
+          }
         },
         (error) => {
           loadingText.innerText = "❌ Gagal memuat model.";
